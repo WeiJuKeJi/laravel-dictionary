@@ -5,15 +5,10 @@ namespace WeiJuKeJi\LaravelDictionary\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static mixed get(string $type, string $code)
- * @method static string|null getName(string $type, string $code)
- * @method static array getList(string $type)
- * @method static bool validate(string $type, string $code)
- * @method static array getBatch(string $type, array $codes)
- * @method static array getTree(string $type)
- * @method static array pluck(string $type)
- * @method static array search(string $type, string $keyword)
- * @method static void refreshCache(string|null $type = null)
+ * @method static \Illuminate\Support\Collection getTree()
+ * @method static \Illuminate\Support\Collection getItemsByKey(string $categoryKey, bool $enabledOnly = true)
+ * @method static string|null getItemValue(string $categoryKey, string $itemKey)
+ * @method static void refreshCache(string|null $categoryKey = null)
  *
  * @see \WeiJuKeJi\LaravelDictionary\Services\DictionaryService
  */

@@ -25,6 +25,7 @@ class TreeNodeResource extends JsonResource
             'id' => $this->id,
             'key' => $this->category_key,
             'label' => $this->category_name,
+            'count' => $this->items_count ?? 0,
             'children' => $this->when(
                 $hasChildren,
                 TreeNodeResource::collection($this->children)

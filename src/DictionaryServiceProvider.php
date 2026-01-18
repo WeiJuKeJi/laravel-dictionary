@@ -27,6 +27,14 @@ class DictionaryServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'dictionary-migrations');
+
+        // 注册命令
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \WeiJuKeJi\LaravelDictionary\Console\Commands\ExportDictionariesCommand::class,
+                \WeiJuKeJi\LaravelDictionary\Console\Commands\DictionaryReseedCommand::class,
+            ]);
+        }
     }
 
     /**

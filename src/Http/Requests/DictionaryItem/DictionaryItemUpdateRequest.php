@@ -14,7 +14,8 @@ class DictionaryItemUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('dictionary_item')->id;
+        $dictionaryItem = $this->route('dictionaryItem');
+        $id = $dictionaryItem ? $dictionaryItem->id : null;
 
         return [
             'parent_key' => ['sometimes', 'required', 'string', 'max:100'],

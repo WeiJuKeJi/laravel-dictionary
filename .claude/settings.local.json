@@ -10,7 +10,12 @@
       "Bash(git push:*)",
       "Bash(git tag:*)",
       "Bash(ssh:*)",
-      "Bash(git remote set-url:*)"
+      "Bash(git remote set-url:*)",
+      "Bash(php -l:*)",
+      "Bash(python3:*)",
+      "Bash(find:*)",
+      "Bash(php -r:*)",
+      "Bash(php artisan tinker:*)"
     ]
   }
 }

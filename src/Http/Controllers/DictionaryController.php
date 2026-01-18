@@ -37,22 +37,20 @@ class DictionaryController extends Controller
      */
     public function categories(Request $request): JsonResponse
     {
+        $params = $request->all();
+        $perPage = $this->resolvePerPage($params);
+
         $query = DictionaryCategory::query();
 
-        if ($request->has('parent_id')) {
-            $query->where('parent_id', $request->input('parent_id'));
+        if (isset($params['parent_id'])) {
+            $query->where('parent_id', $params['parent_id']);
         }
 
-        $categories = $query->filter($request->all())
+        $categories = $query->filter($params)
             ->orderBy('sort_order')
-            ->paginate($request->input('per_page', 15));
+            ->paginate($perPage);
 
-        return $this->success([
-            'list' => DictionaryCategoryResource::collection($categories->items()),
-            'total' => $categories->total(),
-            'current_page' => $categories->currentPage(),
-            'per_page' => $categories->perPage(),
-        ], '获取成功');
+        return $this->respondWithPagination($categories, DictionaryCategoryResource::class, '获取成功');
     }
 
     /**
@@ -62,11 +60,7 @@ class DictionaryController extends Controller
     {
         $category = $dictionaryService->saveCategory($request->validated());
 
-        return $this->success(
-            DictionaryCategoryResource::make($category),
-            '创建成功',
-            201
-        );
+        return $this->respondWithResource($category, DictionaryCategoryResource::class, '创建成功');
     }
 
     /**
@@ -77,10 +71,7 @@ class DictionaryController extends Controller
         $data = array_merge($request->validated(), ['id' => $dictionaryCategory->id]);
         $category = $dictionaryService->saveCategory($data);
 
-        return $this->success(
-            DictionaryCategoryResource::make($category),
-            '更新成功'
-        );
+        return $this->respondWithResource($category, DictionaryCategoryResource::class, '更新成功');
     }
 
     /**
@@ -88,9 +79,12 @@ class DictionaryController extends Controller
      */
     public function destroyCategory(DictionaryCategory $dictionaryCategory, DictionaryService $dictionaryService): JsonResponse
     {
-        $dictionaryService->deleteCategory($dictionaryCategory->id);
-
-        return $this->success(null, '删除成功');
+        try {
+            $dictionaryService->deleteCategory($dictionaryCategory->id);
+            return $this->success(null, '删除成功');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 400);
+        }
     }
 
     /**
@@ -98,22 +92,20 @@ class DictionaryController extends Controller
      */
     public function items(Request $request): JsonResponse
     {
+        $params = $request->all();
+        $perPage = $this->resolvePerPage($params);
+
         $query = DictionaryItem::query();
 
-        if ($request->has('parent_key')) {
-            $query->where('parent_key', $request->input('parent_key'));
+        if (isset($params['parent_key'])) {
+            $query->where('parent_key', $params['parent_key']);
         }
 
-        $items = $query->filter($request->all())
+        $items = $query->filter($params)
             ->orderBy('sort_order')
-            ->paginate($request->input('per_page', 15));
+            ->paginate($perPage);
 
-        return $this->success([
-            'list' => DictionaryItemResource::collection($items->items()),
-            'total' => $items->total(),
-            'current_page' => $items->currentPage(),
-            'per_page' => $items->perPage(),
-        ], '获取成功');
+        return $this->respondWithPagination($items, DictionaryItemResource::class, '获取成功');
     }
 
     /**
@@ -123,11 +115,7 @@ class DictionaryController extends Controller
     {
         $item = $dictionaryService->saveItem($request->validated());
 
-        return $this->success(
-            DictionaryItemResource::make($item),
-            '创建成功',
-            201
-        );
+        return $this->respondWithResource($item, DictionaryItemResource::class, '创建成功');
     }
 
     /**
@@ -138,10 +126,7 @@ class DictionaryController extends Controller
         $data = array_merge($request->validated(), ['id' => $dictionaryItem->id]);
         $item = $dictionaryService->saveItem($data);
 
-        return $this->success(
-            DictionaryItemResource::make($item),
-            '更新成功'
-        );
+        return $this->respondWithResource($item, DictionaryItemResource::class, '更新成功');
     }
 
     /**
@@ -149,27 +134,27 @@ class DictionaryController extends Controller
      */
     public function destroyItem(DictionaryItem $dictionaryItem, DictionaryService $dictionaryService): JsonResponse
     {
-        $dictionaryService->deleteItem($dictionaryItem->id);
-
-        return $this->success(null, '删除成功');
+        try {
+            $dictionaryService->deleteItem($dictionaryItem->id);
+            return $this->success(null, '删除成功');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 400);
+        }
     }
 
     /**
      * 根据分类键获取启用的字典项列表
      */
-    public function getItemsByKey(string $categoryKey): JsonResponse
+    public function getItemsByKey(string $categoryKey, DictionaryService $dictionaryService): JsonResponse
     {
         if ($categoryKey === 'root') {
-            return $this->success(['list' => []], '获取成功');
+            return $this->respondWithList([], 0, '获取成功');
         }
 
-        $items = DictionaryItem::where('parent_key', $categoryKey)
-            ->enabled()
-            ->orderBy('sort_order')
-            ->get();
+        $items = $dictionaryService->getItemsByKey($categoryKey, true);
 
-        return $this->success([
-            'list' => DictionaryItemResource::collection($items),
-        ], '获取成功');
+        $list = DictionaryItemResource::collection($items)->toArray(request());
+
+        return $this->respondWithList($list, count($list), '获取成功');
     }
 }

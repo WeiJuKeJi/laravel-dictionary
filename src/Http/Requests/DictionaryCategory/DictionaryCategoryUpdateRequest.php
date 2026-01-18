@@ -14,7 +14,8 @@ class DictionaryCategoryUpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('dictionary_category')->id;
+        $dictionaryCategory = $this->route('dictionaryCategory');
+        $id = $dictionaryCategory ? $dictionaryCategory->id : null;
 
         return [
             'parent_id' => ['sometimes', 'nullable', 'integer', 'exists:dictionary_categories,id'],

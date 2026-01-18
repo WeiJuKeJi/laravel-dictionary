@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "{protocol}://{host}/api/dictionaries",
+      "url": "{protocol}://{host}",
       "description": "字典管理 API 服务器",
       "variables": {
         "protocol": {
@@ -23,11 +23,11 @@
     }
   ],
   "paths": {
-    "/tree": {
+    "/dictionaries/tree": {
       "get": {
         "tags": ["Dictionary"],
         "summary": "获取字典分类树",
-        "description": "获取完整的字典分类树形结构，包含所有层级的分类信息\n\n**测试用例：**\n1. 获取完整树形结构\n2. 验证树形层级关系\n3. 验证节点数据完整性",
+        "description": "获取完整的字典分类树形结构，包含所有层级的分类信息和每个节点的字典项数量\n\n**功能说明：**\n- 返回树形结构，包含所有层级的分类\n- 每个节点包含 count 字段，表示该分类下的字典项数量\n- 一次请求获取所有数据，性能优化\n\n**测试用例：**\n1. 获取完整树形结构\n2. 验证树形层级关系\n3. 验证节点数据完整性\n4. 验证 count 字段准确性",
         "operationId": "getTree",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -50,14 +50,24 @@
                   "data": {
                     "list": [
                       {
-                        "id": 1,
-                        "key": "status",
-                        "label": "状态分类",
+                        "id": "root",
+                        "key": "root",
+                        "label": "根节点",
+                        "count": 0,
                         "children": [
                           {
-                            "id": 2,
-                            "key": "user_status",
-                            "label": "用户状态"
+                            "id": 1,
+                            "key": "status",
+                            "label": "状态分类",
+                            "count": 5,
+                            "children": [
+                              {
+                                "id": 2,
+                                "key": "user_status",
+                                "label": "用户状态",
+                                "count": 3
+                              }
+                            ]
                           }
                         ]
                       }
@@ -71,7 +81,7 @@
         }
       }
     },
-    "/categories": {
+    "/dictionaries/categories": {
       "get": {
         "tags": ["Dictionary"],
         "summary": "获取字典分类列表",
@@ -125,9 +135,7 @@
                         "updated_at": "2025-01-17T00:00:00.000Z"
                       }
                     ],
-                    "total": 1,
-                    "current_page": 1,
-                    "per_page": 15
+                    "total": 1
                   }
                 }
               }
@@ -204,7 +212,7 @@
         }
       }
     },
-    "/categories/{id}": {
+    "/dictionaries/categories/{id}": {
       "put": {
         "tags": ["Dictionary"],
         "summary": "更新字典分类",
@@ -314,7 +322,7 @@
         }
       }
     },
-    "/items": {
+    "/dictionaries/items": {
       "get": {
         "tags": ["Dictionary"],
         "summary": "获取字典项列表",
@@ -370,9 +378,7 @@
                         "updated_at": "2025-01-17T00:00:00.000Z"
                       }
                     ],
-                    "total": 1,
-                    "current_page": 1,
-                    "per_page": 15
+                    "total": 1
                   }
                 }
               }
@@ -384,7 +390,7 @@
       "post": {
         "tags": ["Dictionary"],
         "summary": "创建字典项",
-        "description": "创建新的字典项\n\n**测试用例：**\n1. 创建启用状态的字典项\n2. 创建禁用状态的字典项",
+        "description": "创建新的字典项\n\n**功能说明：**\n- 支持手动输入字典键\n- 支持自动生成字典键（数字递增）\n- 当 auto_generate_key 为 true 时，系统自动生成数字键\n- 自动生成规则：查找该分类下最大的数字键，在此基础上加 1\n\n**测试用例：**\n1. 手动输入字典键\n2. 自动生成字典键（首次创建，生成 \"1\"）\n3. 自动生成字典键（已有数据，生成递增值）",
         "operationId": "createItem",
         "security": [{ "bearerAuth": [] }],
         "parameters": [
@@ -401,24 +407,25 @@
           "content": {
             "application/json": {
               "examples": {
-                "启用状态": {
-                  "summary": "创建启用状态的字典项",
+                "手动输入键": {
+                  "summary": "手动输入字典键",
                   "value": {
                     "parent_key": "status",
-                    "item_key": "active",
-                    "item_value": "激活",
+                    "item_key": "1",
+                    "item_value": "启用",
                     "sort_order": 1,
-                    "is_enabled": true
+                    "is_enabled": true,
+                    "auto_generate_key": false
                   }
                 },
-                "禁用状态": {
-                  "summary": "创建禁用状态的字典项",
+                "自动生成键": {
+                  "summary": "自动生成字典键",
                   "value": {
                     "parent_key": "status",
-                    "item_key": "inactive",
-                    "item_value": "未激活",
+                    "item_value": "停用",
                     "sort_order": 2,
-                    "is_enabled": false
+                    "is_enabled": true,
+                    "auto_generate_key": true
                   }
                 }
               }
@@ -436,8 +443,8 @@
                   "data": {
                     "id": 1,
                     "parent_key": "status",
-                    "item_key": "active",
-                    "item_value": "激活",
+                    "item_key": "1",
+                    "item_value": "启用",
                     "sort_order": 1,
                     "is_enabled": true,
                     "is_enabled_text": "启用",
@@ -453,7 +460,7 @@
         }
       }
     },
-    "/items/{id}": {
+    "/dictionaries/items/{id}": {
       "put": {
         "tags": ["Dictionary"],
         "summary": "更新字典项",
@@ -565,7 +572,7 @@
         }
       }
     },
-    "/items/by-key/{categoryKey}": {
+    "/dictionaries/items/by-key/{categoryKey}": {
       "get": {
         "tags": ["Dictionary"],
         "summary": "根据分类键获取字典项",
@@ -620,7 +627,8 @@
                         "created_at": "2025-01-17T00:00:00.000Z",
                         "updated_at": "2025-01-17T00:00:00.000Z"
                       }
-                    ]
+                    ],
+                    "total": 2
                   }
                 }
               }
