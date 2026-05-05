@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-dictionary` will be documented in this file.
 
+## [1.3.0] - 2026-05-05
+
+### Changed
+- Added Laravel 13 support to Composer constraints.
+- Expanded the package test dependency matrix for Laravel 13.
+
 ## [1.2.0] - 2026-01-18
 
 ### Added
